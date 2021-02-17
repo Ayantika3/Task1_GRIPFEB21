@@ -1,0 +1,121 @@
+---
+title: "Prediction using supervised ML"
+author: "Ayantika Maity"
+output: html_document
+---
+
+*Query: Predict the percentage of a student based on the number of study hours.*
+
+This is a simple linear regression task as it involves just 2 variables. 
+
+Tool used: R
+
+**Importing data**
+```{r}
+df<- read.csv("C:/Users/Ayantika Maity/Downloads/student_scores.csv")
+head(df)
+```
+
+**Data Preprocessing**
+```{r}
+dim(df)
+```
+The data set has 2 variables with 25 observations each. 
+
+**Data type of the variables**
+```{r}
+typeof(df$Hours)
+typeof(df$Scores)
+```
+
+The variable "Hours" is in double type and "Scores" is in integer type.
+
+```{r}
+summary(df)
+```
+**Missing values**
+```{r}
+colSums(is.na(df))
+```
+There is no missing value, so data cleaning is not required.
+
+**Data visualization**
+```{r}
+boxplot(df$Hours)
+```
+
+```{r}
+boxplot(df$Scores)
+```
+
+For the boxplots, we can see that no outliers are present. Hence, trimming of data set is not required.
+
+**Scatter plot**
+```{r}
+plot(df)
+```
+
+From the scatter plot, we can see that there is a strong positive linear relationship between "scores" and "hours".
+
+The above analysis can be verified by calculating the correlation between "scores" and "hours".
+```{r}
+cor(df)
+```
+The correlation is 0.9761907 which implies the variables are highly correlated.
+
+Now we apply linear regression on the data set. 
+Let us split the data set into "training"(80%) and "testing"(20%)
+
+```{r}
+set.seed(2582)
+ind<-sample(2,nrow(df),replace=TRUE,prob=c(0.8,0.2))
+training<- df[ind==1,]
+testing<- df[ind==2,]
+head(training)
+testing
+```
+**Linear Regression Model**
+```{r}
+lr<- lm(Scores~Hours,training)
+lr
+```
+```{r}
+summary(lr)
+```
+*The value of Multiple R-square means, nearly 95.6% of the variance in the values of Scores is explained by the model.
+
+*p-value<1.136e-13 is less than 0.05 and it shows that the model is of high significance.
+
+```{r}
+training_predict <-predict(lr,training)
+head(cbind(training,training_predict))
+
+testing_predict<- predict(lr,testing)
+head(cbind(testing,testing_predict))
+```
+
+**Linear regression line**
+```{r}
+library(ggplot2)
+ggplot(df, aes(x=Hours, y= Scores)) +
+  geom_point(color='red', size=3) +
+  geom_smooth(method='lm', formula= y~x)
+```
+
+The coefficient and intercept of the model
+```{r}
+intercept<-coef(summary(lr))["(Intercept)","Estimate"]
+Hours <-coef(summary(lr))["Hours","Estimate"]
+intercept
+Hours
+```
+
+Prediction of the given query
+```{r}
+given_hours<-data.frame(Hours=9.25)
+score_pred<-predict(lr,given_hours)
+head(score_pred)
+```
+Comment: Our model predicts that, if a student studies 9.25hrs/day then he/she is expected to score 92.25393%.
+
+Thank you!
